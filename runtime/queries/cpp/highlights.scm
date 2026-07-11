@@ -23,8 +23,16 @@
 (field_declaration
   (field_identifier) @variable.member)
 
-(field_initializer
-  (field_identifier) @property)
+
+((field_identifier) @variable.member
+  (#has-ancestor? @variable.member field_declaration))
+
+(field_declaration
+  (field_identifier) @variable.member
+  (#has-ancestor? @variable.member field_identifier))
+
+((field_expression
+  (field_identifier) @variable.member) @_parent)
 
 (function_declarator
   declarator: (field_identifier) @function.method)
@@ -39,8 +47,14 @@
 
 (namespace_identifier) @module
 
-((namespace_identifier) @type
-  (#lua-match? @type "^[%u]"))
+; ((namespace_identifier) @type
+  ; (#lua-match? @type "^[%u]"))
+
+((namespace_identifier) @module
+  (#lua-match? @module "^[%u][%u]+"))
+
+((namespace_identifier) @class
+  (#lua-match? @class "^[%u][%l]"))
 
 (case_statement
   value: (qualified_identifier
@@ -92,6 +106,9 @@
 "operator" @function
 
 "static_assert" @function.builtin
+; "static_cast" @function.builtin
+; "dynamic_cast" @function.builtin
+; "const_cast" @function.builtin
 
 (call_expression
   (qualified_identifier
@@ -160,30 +177,30 @@
       (field_identifier) @function.method.call)))
 
 ; constructors
-((function_declarator
-  (qualified_identifier
-    (identifier) @constructor))
-  (#lua-match? @constructor "^%u"))
+; ((function_declarator
+  ; (qualified_identifier
+    ; (identifier) @constructor))
+  ; (#lua-match? @constructor "^%u"))
 
-((call_expression
-  function: (identifier) @constructor)
-  (#lua-match? @constructor "^%u"))
+; ((call_expression
+  ; function: (identifier) @constructor)
+  ; (#lua-match? @constructor "^%u"))
 
-((call_expression
-  function: (qualified_identifier
-    name: (identifier) @constructor))
-  (#lua-match? @constructor "^%u"))
+; ((call_expression
+  ; function: (qualified_identifier
+    ; name: (identifier) @constructor))
+  ; (#lua-match? @constructor "^%u"))
 
-((call_expression
-  function: (field_expression
-    field: (field_identifier) @constructor))
-  (#lua-match? @constructor "^%u"))
+; ((call_expression
+  ; function: (field_expression
+    ; field: (field_identifier) @constructor))
+  ; (#lua-match? @constructor "^%u"))
 
-; constructing a type in an initializer list: Constructor ():  **SuperType (1)**
-((field_initializer
-  (field_identifier) @constructor
-  (argument_list))
-  (#lua-match? @constructor "^%u"))
+; ; constructing a type in an initializer list: Constructor ():  **SuperType (1)**
+; ((field_initializer
+  ; (field_identifier) @constructor
+  ; (argument_list))
+  ; (#lua-match? @constructor "^%u"))
 
 ; Constants
 (this) @variable.builtin
@@ -214,6 +231,7 @@
   "using"
   "requires"
   "constexpr"
+  "nullptr"
 ] @keyword
 
 [
